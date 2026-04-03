@@ -9,19 +9,20 @@ private:
     static inline unsigned int default_ptr_segment_size{128};
     static inline unsigned int idCounter{0};
     static inline vector<Segment*> segments{};
+    static size_t* ptr_segment;
 
-    unsigned int* data_segment;
-    size_t* ptr_segment;
+    void* data_segment;
     unsigned int length;
+
 
 public:
     unsigned int id;
 
     Segment() {
-        ++count;
         id = idCounter++;
-        data_segment = (unsigned int*) malloc(sizeof(int) * default_data_segment_size);
-        ptr_segment = (size_t*) malloc(sizeof(size_t) * default_ptr_segment_size);
+        if(!count++)
+            ptr_segment = (size_t*) malloc(default_ptr_segment_size);
+        data_segment = malloc(default_data_segment_size);
         length = sizeof(int) * default_data_segment_size;
         segments.push_back(this);
     }
@@ -37,8 +38,9 @@ public:
             }
     }
 
-    int* NewPointer(){
 
+    void newPointer(void* p, unsigned int byte){
+        
     }
 
     void resetDataSegmentSize(unsigned int newSize){
