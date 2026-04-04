@@ -1,4 +1,5 @@
 #include "main.h"
+#include "Segment.h"
 
 using namespace std;
 
