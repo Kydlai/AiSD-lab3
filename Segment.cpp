@@ -27,6 +27,31 @@ void Node::clear_dll(){
     delete this;
 }
 
+void Node::nodeCollapse(Node* node){
+    if(node->start_ptr == node->end_ptr){
+        if(node->prev != nullptr)
+            node->prev->next = node->next;
+        if(node->next != nullptr)
+            node->next->prev = node->prev;
+        if(node->prev != nullptr && node->next != nullptr)
+            nodeConnect(node->prev, node->next);
+        delete node;
+    }
+}
+
+void Node::nodeConnect(Node* node1, Node* node2){
+    if(node1->state == node2->state){
+        if(node1->start_ptr > node2->start_ptr)
+            swap(node1, node2);
+        if(node1->end_ptr == node2->start_ptr){
+            node1->end_ptr = node2->end_ptr;
+            node1->next = node2->next;
+            node2->next->prev = node1;
+            delete node2;
+        }
+    }
+}
+
 size_t* Segment::ptrAllocate(unsigned int count){
     return Allocate<size_t>(count, ptr_dll_head);
 }
@@ -91,7 +116,7 @@ void Segment::NewPointer(void*& p, unsigned int bytes){
     return;
 }
 
-void Segment::FreePointer(){
+void Segment::FreePointer(void* p){
     //TODO
 }
 

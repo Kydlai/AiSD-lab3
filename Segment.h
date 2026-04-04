@@ -38,6 +38,8 @@ public:
     statement state;
     //vector<size_t> ptrs;
 
+    static inline void nodeCollapse(Node* node);
+    static inline void nodeConnect(Node* node1, Node* node2);
     Node(void* new_start_ptr, void* new_end_ptr, statement new_state);
     void clear_dll();
 };
@@ -60,6 +62,7 @@ private:
     template <typename T>
     static inline T* Allocate(unsigned int count, Node* dll_head){
         Node* tmp_node = dll_head; // голова всегда последний блок
+
         if(tmp_node->next != nullptr)
             tmp_node = tmp_node->next; // переход на начальный блок
         if(tmp_node->state == RESERVED){
@@ -71,21 +74,21 @@ private:
             }
         }
         
-        int shift = 0; // смещение на случай добавления в существующий блок
-
-        if(tmp_node->prev == nullptr){
+        if(tmp_node->prev == nullptr){ // Если необходимо создать новый блок
             Node* new_node = new Node(tmp_node->start_ptr, (T*) (tmp_node->start_ptr) + count, RESERVED);
             new_node->next = tmp_node;
             tmp_node->prev = new_node;
         }
-        else{
+        else // Если необходимо расширить существующий
             tmp_node->prev->end_ptr = (T*) tmp_node->prev->end_ptr + count;
-        }
+        
         tmp_node->start_ptr = (T*) tmp_node->start_ptr + count;
         if(tmp_node->next == nullptr)
             tmp_node->next = tmp_node->prev;
-        //TODO проверка удаления tmp_node
-        return (T*) (tmp_node->prev->end_ptr) - count;
+
+        auto result = (T*) (tmp_node->prev->end_ptr) - count;
+        Node::nodeCollapse(tmp_node);
+        return result;
     }
 
     static size_t* ptrAllocate(unsigned int count);
@@ -98,8 +101,6 @@ public:
     Segment();
     ~Segment();
     void NewPointer(void*& p, unsigned int bytes);
-
-    
 
     template <typename T>
     void WritePointer(void* p, T data){
@@ -128,7 +129,7 @@ public:
         WritePointer<T>(p, ReadPointer<T>(b));
     }
 
-    void FreePointer();
+    void FreePointer(void* p);
     void resetDataSegmentSize(unsigned int newSize);
     unsigned int getDataSegmentSize();
     void resetPtrSegmentSize(unsigned int newSize);
