@@ -17,56 +17,27 @@ void Node::clear_dll(){
     Node *prev_node = prev, *next_node = next;
     while(prev_node != nullptr){
         Node* tmp_node = prev_node->prev;
-        free(prev_node);
+        if(prev_node->next != nullptr)
+            prev_node->next->prev = nullptr;
+        if(prev_node->prev != nullptr)
+            prev_node->prev->next = nullptr;
+        delete prev_node;
         prev_node = tmp_node;
     }
-    while(next_node != nullptr){
-        Node* tmp_node = next_node->next;
-        free(next_node);
-        next_node = tmp_node;
-    }
-    free(this);
+    delete this;
 }
 
 size_t* Segment::ptrAllocate(unsigned int count){
-    Node* tmp_node = ptr_dll_head;
-    while (tmp_node->state == EMPTY || (size_t*) tmp_node->end_ptr - count < (size_t*) tmp_node->start_ptr){
-        tmp_node = tmp_node->next;
-        if(tmp_node == nullptr)
-            throw new NoEmptySpaceException;
-    }
-    
-    if(tmp_node->prev == nullptr){
-        Node* new_node = new Node(tmp_node->start_ptr, (byte*) (tmp_node->start_ptr) + count, RESERVED);
-        new_node->next = tmp_node;
-        tmp_node->prev = new_node;
-    }
-    else 
-        tmp_node->prev->end_ptr = (size_t*) tmp_node->prev->end_ptr + count;
-    tmp_node->start_ptr = (size_t*) tmp_node->start_ptr + count;
-    return (size_t*) (tmp_node->prev->start_ptr);
+    return Allocate<size_t>(count, ptr_dll_head);
 }
 
 void* Segment::dataAllocate(unsigned int count){
-    Node* tmp_node = data_dll_head;
-    while (tmp_node->state == EMPTY || (byte*) tmp_node->end_ptr - count < (byte*) tmp_node->start_ptr){
-        tmp_node = tmp_node->next;
-        if(tmp_node == nullptr)
-            throw new NoEmptySpaceException;
-    }
-    if(tmp_node->prev == nullptr){
-        Node* new_node = new Node(tmp_node->start_ptr, (byte*) (tmp_node->start_ptr) + count , RESERVED);
-        new_node->next = tmp_node;
-        tmp_node->prev = new_node;
-    }
-    else 
-        tmp_node->prev->end_ptr = (byte*) tmp_node->prev->end_ptr + count;
-    tmp_node->start_ptr = (byte*) tmp_node->start_ptr + count;
-    return tmp_node->prev->start_ptr;
+    return Allocate<byte>(count, data_dll_head);
 }
 
 void Segment::resizeDataSegment(unsigned int new_size){
     //TODO
+    return;
 }
 
 Segment::Segment() {
@@ -95,8 +66,8 @@ Segment::~Segment() {
         }
 }
 
-void Segment::NewPointer(void* p, unsigned int bytes){
-    size_t* ptr_ptr;
+void Segment::NewPointer(void*& p, unsigned int bytes){
+    size_t* ptr_ptr = nullptr;
     try{
         ptr_ptr = ptrAllocate(1); // Указатель на ячеку, храняюшую указатель на данные
     } catch (NoEmptySpaceException e) {
@@ -106,37 +77,18 @@ void Segment::NewPointer(void* p, unsigned int bytes){
     do{
         int tmpSegmentId = this->id;
         try{
-        *ptr_ptr = (size_t) this->dataAllocate(bytes); // Указатель на ячейку с данными
+            *ptr_ptr = (size_t) this->dataAllocate(bytes); // Указатель на ячейку с данными
         } catch (NoEmptySpaceException e) {
             tmpSegmentId = (tmpSegmentId + 1) % idCounter;
             if(!changeSegmentAllowed || tmpSegmentId == this->id){
+                int a = 0;
                 //TODO расширение текущего сегмента
             }
             return;
         }
     } while(changeSegmentAllowed);
     p = ptr_ptr;
-}
-
-template <typename T>
-void Segment::WritePointer(void* p, T data){
-    if(p != nullptr && p != NULL && *p != nullptr && *p != null)
-        *(*p) = data;
-    else
-        throw new NullPtrException();
-}
-
-template <typename T>
-T Segment::ReadPointer(void* p){
-    if(p != nullptr && p != NULL && *p != nullptr && *p != null)
-        return *(*p);
-    else
-        throw new NullPtrException();
-}
-
-template <typename T>
-void Segment::SetPointer(void* p, void* b){
-    WritePointer(p, ReadPointer(b));
+    return;
 }
 
 void Segment::FreePointer(){
