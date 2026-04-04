@@ -1,55 +1,30 @@
 #include "Segment.h"
 
-using namespace std;
-
-
-Node::Node(void* new_start_ptr, void* new_end_ptr, statement new_state){
-    start_ptr = new_start_ptr;
-    end_ptr = new_end_ptr;                              
-    prev = nullptr;
-    next = nullptr;
-    state = new_state;
-    //ptrs = vector<size_t>{};
-}
-
-
-void Node::clear_dll(){
-    Node *prev_node = prev, *next_node = next;
-    while(prev_node != nullptr){
-        Node* tmp_node = prev_node->prev;
-        if(prev_node->next != nullptr)
-            prev_node->next->prev = nullptr;
-        if(prev_node->prev != nullptr)
-            prev_node->prev->next = nullptr;
-        delete prev_node;
-        prev_node = tmp_node;
-    }
-    delete this;
-}
-
-void Node::nodeCollapse(Node* node){
-    if(node->start_ptr == node->end_ptr){
-        if(node->prev != nullptr)
-            node->prev->next = node->next;
-        if(node->next != nullptr)
-            node->next->prev = node->prev;
-        if(node->prev != nullptr && node->next != nullptr)
-            nodeConnect(node->prev, node->next);
-        delete node;
-    }
-}
-
-void Node::nodeConnect(Node* node1, Node* node2){
-    if(node1->state == node2->state){
-        if(node1->start_ptr > node2->start_ptr)
-            swap(node1, node2);
-        if(node1->end_ptr == node2->start_ptr){
-            node1->end_ptr = node2->end_ptr;
-            node1->next = node2->next;
-            node2->next->prev = node1;
-            delete node2;
+template <typename T> static inline T* Segment::Allocate(unsigned int count, Node* dll_head){
+    Node* tmp_node = dll_head; // голова всегда последний блок   if(tmp_node->next != nullptr)
+        tmp_node = tmp_node->next; // переход на начальный блок
+    if(tmp_node->state == RESERVED){
+        tmp_node = tmp_node->next; // копия послеследующей строки
+        while (tmp_node->state == RESERVED || (T*) tmp_node->end_ptr - count < (T*) tmp_node->start_ptr){
+            tmp_node = tmp_node->next;
+            if(tmp_node == nullptr)
+                throw NoEmptySpaceException();
         }
     }
+    
+    if(tmp_node->prev == nullptr){ // Если необходимо создать новый блок
+        Node* new_node = new Node(tmp_node->start_ptr, (T*) (tmp_node->start_ptr) + count, RESERVED);
+        new_node->next = tmp_node;
+        tmp_node->prev = new_node;
+    }
+    else // Если необходимо расширить существующий
+        tmp_node->prev->end_ptr = (T*) tmp_node->prev->end_ptr + count;
+    
+    tmp_node->start_ptr = (T*) tmp_node->start_ptr + count;
+    if(tmp_node->next == nullptr)
+        tmp_node->next = tmp_node->prev;   auto result = (T*) (tmp_node->prev->end_ptr) - count;
+    Node::nodeCollapse(tmp_node);
+    return result;
 }
 
 size_t* Segment::ptrAllocate(unsigned int count){
@@ -116,8 +91,32 @@ void Segment::NewPointer(void*& p, unsigned int bytes){
     return;
 }
 
+template <typename T> void Segment::WritePointer(void* p, T data){
+    if(p != nullptr){
+        size_t* ptr = (size_t*) p;
+        if(ptr != nullptr)
+            *((T*) *ptr) = data;
+        else throw NullPtrException();
+    } else throw NullPtrException();
+    return;
+}
+
+template <typename T> T Segment::ReadPointer(void* p){
+    if(p != nullptr){
+        size_t* ptr = (size_t*)p;
+        if(ptr != nullptr)
+            return *((T*) *ptr);
+        else
+            throw NullPtrException();
+    } else throw NullPtrException();
+}
+
+template <typename T> void Segment::SetPointer(T* p, T* b){
+    WritePointer<T>(p, ReadPointer<T>(b));
+}
+
 void Segment::FreePointer(void* p){
-    //TODO
+    
 }
 
 void Segment::resetDataSegmentSize(unsigned int newSize){
