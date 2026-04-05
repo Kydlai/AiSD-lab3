@@ -54,7 +54,7 @@ public:
         if(ptr != nullptr)
             *((T*) *ptr) = data;
         else throw NullPtrException();
-    } else throw NullPtrException();
+    } else throw NullPtrException(); 
     return;
     }
 
@@ -63,8 +63,7 @@ public:
             size_t* ptr = (size_t*)p;
             if(ptr != nullptr)
                 return *((T*) *ptr);
-            else
-                throw NullPtrException();
+            else throw NullPtrException();
         } else throw NullPtrException();
     }
 };

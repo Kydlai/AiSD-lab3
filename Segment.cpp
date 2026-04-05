@@ -1,7 +1,7 @@
 #include "Segment.h"
 
 template <typename T> T* Segment::Allocate(unsigned int count, Node* dll_head){ // <---------------------------------------------------
-    Node* tmp_node = dll_head; // голова всегда последний блок   if(tmp_node->next != nullptr)
+    Node* tmp_node = dll_head; // голова всегда последний блок
     if(tmp_node->next != nullptr)
         tmp_node = tmp_node->next; // переход на начальный блок
     if(tmp_node->state == RESERVED){
@@ -12,7 +12,6 @@ template <typename T> T* Segment::Allocate(unsigned int count, Node* dll_head){ 
                 throw NoEmptySpaceException();
         }
     }
-    
     if(tmp_node->prev == nullptr){ // Если необходимо создать новый блок
         Node* new_node = new Node(tmp_node->start_ptr, (T*) (tmp_node->start_ptr) + count, RESERVED);
         new_node->next = tmp_node;
@@ -23,21 +22,44 @@ template <typename T> T* Segment::Allocate(unsigned int count, Node* dll_head){ 
     
     tmp_node->start_ptr = (T*) tmp_node->start_ptr + count;
     if(tmp_node->next == nullptr)
-        tmp_node->next = tmp_node->prev;   auto result = (T*) (tmp_node->prev->end_ptr) - count;
+        tmp_node->next = tmp_node->prev;   
+    auto result = (T*) (tmp_node->prev->end_ptr) - count;
     Node::nodeCollapse(tmp_node);
     return result;
 }
 
 size_t* Segment::ptrAllocate(unsigned int count){
+    if(count > default_ptr_segment_size)
+        throw NoEmptySpaceException();
     return Allocate<size_t>(count, ptr_dll_head);
 }
 
 void* Segment::dataAllocate(unsigned int count){
+    if(count > data_segment_size)
+        throw NoEmptySpaceException();
     return Allocate<byte>(count, data_dll_head);
 }
 
 void Segment::resizeDataSegment(unsigned int new_size){
-    //TODO
+    if(new_size > this->data_segment_size){
+        byte* old_data_segment_start = (byte*) data_segment;
+        byte* old_data_segment_end = (byte*) data_segment + data_segment_size;
+        data_segment = (byte*) realloc(data_segment, new_size);
+        data_segment_size = new_size;
+        for(Node* tmp_node = ptr_dll_head; ;){ // Перенос данных ptr_segment
+            if(tmp_node->state == RESERVED)
+                if((byte*) *((size_t*) tmp_node->start_ptr) <= (byte*) old_data_segment_end && (byte*) *((size_t*) tmp_node->end_ptr) >= (byte*) old_data_segment_start)
+                    for(byte** i = (byte**) tmp_node->start_ptr; i != tmp_node->end_ptr; i += 2) // i -> указатель на указатель
+                        if((byte*) *i >= old_data_segment_start && (byte*) *(i) <=  old_data_segment_end)
+                            *i = (byte*) data_segment + ((byte*) *i - (byte*) old_data_segment_start);
+                        
+            tmp_node = tmp_node->next;
+
+            if(tmp_node->next == nullptr || tmp_node == ptr_dll_head)
+                break;
+        }
+    }
+    printSegments();
     return;
 }
 
@@ -51,7 +73,7 @@ Segment::Segment() {
     data_segment_size = default_data_segment_size;
     id = idCounter++;
     data_segment = malloc(data_segment_size);
-    data_dll_head = new Node(data_segment, (byte*) data_segment + (data_segment_size - 1), EMPTY);
+    data_dll_head = new Node(data_segment, (byte*) data_segment + data_segment_size, EMPTY);
     segments.push_back(this);
 }
 
@@ -82,14 +104,16 @@ void Segment::NewPointer(void*& p, unsigned int bytes){ // <--------------------
             size_t* bytes_count_ptr = ptr_ptr + 1;
             *bytes_count_ptr = bytes;
         } catch (NoEmptySpaceException e) {
+            printSegments();
+            FreePointer(ptr_ptr);
             tmpSegmentId = (tmpSegmentId + 1) % idCounter;
+            printSegments();
             if(!changeSegmentAllowed || tmpSegmentId == this->id){
-                int a = 0;
-                //TODO расширение текущего сегмента
+                this->resizeDataSegment(data_segment_size * 8);
+                return NewPointer(p, bytes);
             }
-            return;
         }
-    } while(changeSegmentAllowed);
+    } while(changeSegmentAllowed && ptr_ptr != nullptr);
     p = ptr_ptr;
     return;
 }
@@ -99,8 +123,12 @@ template <typename T> void Segment::SetPointer(T* p, T* b){ // <----------------
 }
 
 void Segment::FreePointer(void* p){ // <---------------------------------------------------------------------------
-    size_t* ptr = (size_t*) p; // указатель на данные
-    data_dll_head->removeData(p, *((size_t*) p + 1));
+    size_t* ptr_ptr = (size_t*) p;
+    byte* data_ptr = (byte*) *(ptr_ptr); // указатель на данные
+    printSegments();
+    data_dll_head->removeData(data_ptr, *(ptr_ptr + 1));
+    ptr_dll_head->removeData(ptr_ptr, sizeof(size_t) * 2);
+    printSegments();
 }
 
 void Segment::printSegments(){
@@ -109,7 +137,8 @@ void Segment::printSegments(){
     cout << "\n\n";
     for(int i = 0; i < Segment::segments.size(); ++i){
         Segment::segments[i]->printSegment("Segment №" , Segment::segments[i]->data_dll_head, i);
-        cout << "\n\n";
+        //cout << "\n═══════════════════════════════════════════════════════════════════\n";
+        cout << "\n───────────────────────────────────────────────────────────────────\n";
     }
 }
 
@@ -143,23 +172,33 @@ void Segment::printSegment(string label, Node* dll_head, int num){
     cout << "╠═════" << n_tabs_middle << "╣\n";
     int j = 0;
     for(Node* tmp_node = dll_head->next; true; tmp_node = tmp_node->next){
+        if(tmp_node == nullptr)
+            break;
         printf("║ %3d ║ %12p ║ %12p ║ %12s ║ %12s ║\n", j++, tmp_node->start_ptr, tmp_node->end_ptr, tmp_node->state == EMPTY ? "EMPTY" : "RESERVED", "");
         cout << "╠═════" << n_tabs_middle << "╣\n";
         if(tmp_node->state == RESERVED)
             for(int* i = (int*) tmp_node->start_ptr, k = 0; i < tmp_node->end_ptr; ++i, ++k){
-                if(dll_head != ptr_dll_head)
+                if(dll_head != ptr_dll_head){
                     printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12d ║\n", "", i, "", "int", *i);
+                    cout << "╠═════" << n_tabs_middle << "╣\n";
+                }
                 else{
                     if(!(k%2))
                         printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12p ║\n", "", i, "", "ptr", *(i++));
-                    else
+                    else{
                         printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12d ║\n", "", i, "", "bytes", *(i++));
+                        cout << "╠═════" << n_tabs_middle << "╣\n";;
+                    }
                 }
-                cout << "╠═════" << n_tabs_middle << "╣\n";
+                
             }
         if(tmp_node == dll_head) break;
     }
-     cout << "╚═════" << n_tabs_lover << "╝\n";
+    if(dll_head != ptr_dll_head)
+        printf( "║size:║ %12d ║ %12s ║ %12s ║ %12s ║\n", default_ptr_segment_size, "", "", "");
+    else
+        printf( "║size:║ %12d ║ %12s ║ %12s ║ %12s ║\n", this->data_segment_size, "", "", "");
+    cout << "╚═════" << n_tabs_lover << "╝\n";
 }
 
 void Segment::resetDataSegmentSize(unsigned int newSize){

@@ -24,11 +24,14 @@ int main() {
     void* p3 = nullptr;
     void* p4 = nullptr;
     cout << "\n\n";
-    segment1->NewPointer(p1, sizeof(int));
-    segment1->WritePointer(p1, 1);
+    Segment::printSegments();
+    //segment1->NewPointer(p1, sizeof(int) * 1000);
+    //segment1->WritePointer(p1, 1);
     //cout << segment1->ReadPointer<int>(p1);
     segment1->NewPointer(p2, sizeof(int));
     segment1->WritePointer(p2, 5);
+    Segment::printSegments();
+    segment1->FreePointer(p2);
     //cout << segment1->ReadPointer<int>(p);
     Segment::printSegments();
 
