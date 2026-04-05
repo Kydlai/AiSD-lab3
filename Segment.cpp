@@ -24,7 +24,7 @@ template <typename T> T* Segment::Allocate(unsigned int count, Node* dll_head){ 
     if(tmp_node->next == nullptr)
         tmp_node->next = tmp_node->prev;   
     auto result = (T*) (tmp_node->prev->end_ptr) - count;
-    Node::nodeCollapse(tmp_node);
+    Node::nodeCollapse(tmp_node, dll_head);
     return result;
 }
 
@@ -123,12 +123,12 @@ template <typename T> void Segment::SetPointer(T* p, T* b){ // <----------------
 }
 
 void Segment::FreePointer(void* p){ // <---------------------------------------------------------------------------
-    size_t* ptr_ptr = (size_t*) p;
+    size_t** ptr_ptr = (size_t**) ((byte*) p); // указатель на указатель
     byte* data_ptr = (byte*) *(ptr_ptr); // указатель на данные
-    printSegments();
-    data_dll_head->removeData(data_ptr, *(ptr_ptr + 1));
+    //printSegments();
+    this->data_dll_head->removeData(data_ptr, (size_t) *(ptr_ptr + 1));
     ptr_dll_head->removeData(ptr_ptr, sizeof(size_t) * 2);
-    printSegments();
+   // printSegments();
 }
 
 void Segment::printSegments(){

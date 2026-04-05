@@ -47,17 +47,27 @@ void Node::removeData(void* p, size_t bytes){
     new_last_node->prev = deleting_node;
     deleting_node->prev = tmp_node;
     tmp_node->next = deleting_node;
-    Node::nodeCollapse(deleting_node);
+    tmp_node->end_ptr = deleting_node->start_ptr;
+    Node::nodeCollapse(tmp_node, this);
+    Node::nodeCollapse(deleting_node, this);
+    Node::nodeCollapse(new_last_node, this);
 }
 
-void Node::nodeCollapse(Node* node){
+void Node::nodeCollapse(Node* node, Node* dll_head){
     if(node->start_ptr == node->end_ptr){
         if(node->prev != nullptr)
-            node->prev->next = node->next;
+            node->prev->next = node->prev;
         if(node->next != nullptr)
             node->next->prev = node->prev;
         if(node->prev != nullptr && node->next != nullptr)
             nodeConnect(node->prev, node->next);
+        if(dll_head->next == node || dll_head->prev == nullptr){
+            dll_head->next = node->next;
+            if(dll_head->next == dll_head){
+                dll_head->next = nullptr;
+                dll_head->prev = nullptr;
+            }
+        }
         delete node;
     }
 }
@@ -67,10 +77,13 @@ void Node::nodeConnect(Node* node1, Node* node2){
         if(node1->start_ptr > node2->start_ptr)
             swap(node1, node2);
         if(node1->end_ptr == node2->start_ptr){
-            node1->end_ptr = node2->end_ptr;
-            node1->next = node2->next;
-            node2->next->prev = node1;
-            delete node2;
+            node2->start_ptr = node1->start_ptr;
+            node2->prev = node1->prev;
+            if(node1->next != nullptr)
+                node1->next->prev = node1->prev;
+            if(node1->prev != nullptr)
+                node1->prev->next = node1->next;
+            delete node1;
         }
     }
 }
