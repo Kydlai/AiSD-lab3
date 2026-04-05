@@ -22,3 +22,10 @@ public:
         return "Обращение к nullptr";
     }
 };
+
+class NodeNotFoundException : public exception{
+public:
+    const char* what() const noexcept override {
+        return "Не найден Node для удаление соответствующих данных";
+    }
+};

@@ -24,6 +24,32 @@ void Node::clear_dll(){
     delete this;
 }
 
+void Node::removeData(void* p, size_t bytes){
+    Node* tmp_node = this;
+
+    int8_t* start_data = (int8_t*) p;
+    int8_t* end_data = (int8_t*) p + bytes;
+    /*
+    byte* start_data = (byte*) p;
+    byte* end_data = (byte*) p + bytes; // с роя-ли <---------------------------------------------------------------------------------
+    */
+    
+    while(!(start_data >= tmp_node->start_ptr && end_data <= tmp_node->end_ptr)){
+        tmp_node = tmp_node->prev;
+        if(tmp_node == nullptr)
+            throw NodeNotFoundException();
+    }
+    Node* deleting_node = new Node(start_data, end_data, EMPTY);
+    Node* new_last_node = new Node(end_data, tmp_node->end_ptr, tmp_node->state);
+    tmp_node->next->prev = new_last_node;
+    new_last_node->next = tmp_node->next;
+    deleting_node->next = new_last_node;
+    new_last_node->prev = deleting_node;
+    deleting_node->prev = tmp_node;
+    tmp_node->next = deleting_node;
+    Node::nodeCollapse(deleting_node);
+}
+
 void Node::nodeCollapse(Node* node){
     if(node->start_ptr == node->end_ptr){
         if(node->prev != nullptr)

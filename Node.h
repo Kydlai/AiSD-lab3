@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utility.h"
+#include <inttypes.h>
 
 using namespace std;
 
@@ -15,6 +16,7 @@ public:
 
     static inline void nodeCollapse(Node* node);
     static inline void nodeConnect(Node* node1, Node* node2);
+    void removeData(void* p, size_t bytes);
     Node(void* new_start_ptr, void* new_end_ptr, statement new_state);
     void clear_dll();
 };

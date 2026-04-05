@@ -6,6 +6,10 @@
 #include <cstdlib>
 #include <vector>
 #include <iostream>
+#include <iomanip>
+#include <string>
+#include <cstdio>
+#include <cstring>
 
 using namespace std;
 
@@ -35,13 +39,33 @@ public:
     Segment();
     ~Segment();
     void NewPointer(void*& p, unsigned int bytes);
-    template <typename T> void WritePointer(void* p, T data);
-    template <typename T> T ReadPointer(void* p);
     template <typename T> void SetPointer(T* p, T* b);
     void FreePointer(void* p);
+    static void printSegments();
+    void printSegment(string label, Node* dll_head, int num);
     void resetDataSegmentSize(unsigned int newSize);
     unsigned int getDataSegmentSize();
     void resetPtrSegmentSize(unsigned int newSize);
     unsigned int getPtrSegmentSize();
+
+    template <typename T> void WritePointer(void* p, T data){ // <--------------------------------------------
+    if(p != nullptr){
+        size_t* ptr = (size_t*) p;
+        if(ptr != nullptr)
+            *((T*) *ptr) = data;
+        else throw NullPtrException();
+    } else throw NullPtrException();
+    return;
+    }
+
+    template <typename T> T ReadPointer(void* p){ // <--------------------------------------------------------
+        if(p != nullptr){
+            size_t* ptr = (size_t*)p;
+            if(ptr != nullptr)
+                return *((T*) *ptr);
+            else
+                throw NullPtrException();
+        } else throw NullPtrException();
+    }
 };
 
