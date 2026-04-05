@@ -217,3 +217,7 @@ void Segment::resetPtrSegmentSize(unsigned int newSize){
 unsigned int Segment::getPtrSegmentSize(){
     return default_ptr_segment_size;
 }
+
+unsigned int Segment::getCount(){
+    return count;
+}

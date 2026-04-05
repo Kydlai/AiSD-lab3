@@ -1,5 +1,6 @@
 #include "main.h"
 #include "Segment.h"
+#include "IOManager.h"
 
 using namespace std;
 
@@ -17,7 +18,7 @@ bool acceptRequest() {
 
 int main() {
     Segment* segment1 = new Segment();
-
+    /*
 
     void* p1 = nullptr;
     void* p2 = nullptr;
@@ -34,7 +35,8 @@ int main() {
     segment1->FreePointer(p2);
     //cout << segment1->ReadPointer<int>(p);
     Segment::printSegments();
-
+    */
+    
     delete segment1;
     return 0;
 }

@@ -34,7 +34,7 @@ private:
     void resizeDataSegment(unsigned int new_size);
 
 public:
-    unsigned int id;
+    unsigned int id; 
 
     Segment();
     ~Segment();
@@ -43,10 +43,11 @@ public:
     void FreePointer(void* p);
     static void printSegments();
     void printSegment(string label, Node* dll_head, int num);
-    void resetDataSegmentSize(unsigned int newSize);
-    unsigned int getDataSegmentSize();
-    void resetPtrSegmentSize(unsigned int newSize);
-    unsigned int getPtrSegmentSize();
+    static void resetDataSegmentSize(unsigned int newSize);
+    static unsigned int getDataSegmentSize();
+    static void resetPtrSegmentSize(unsigned int newSize);
+    static unsigned int getPtrSegmentSize();
+    static unsigned int getCount();
 
     template <typename T> void WritePointer(void* p, T data){ // <--------------------------------------------
     if(p != nullptr){
@@ -54,8 +55,8 @@ public:
         if(ptr != nullptr)
             *((T*) *ptr) = data;
         else throw NullPtrException();
-    } else throw NullPtrException(); 
-    return;
+        } else throw NullPtrException(); 
+        return;
     }
 
     template <typename T> T ReadPointer(void* p){ // <--------------------------------------------------------
