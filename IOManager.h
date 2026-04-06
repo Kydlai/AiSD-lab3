@@ -9,11 +9,13 @@
 
 using namespace std;
 
+inline bool intSegmentOutput{true};
 inline string errata =  "В любой момент вы можете ввести одну из этих комманд\n"
                 "h\thelp\np\tprint all segments\ns\topen settings\nt\ttest mode\n";
 
 void clearInputBuffer();
 bool acceptRequest();
+bool repeatRequest();
 
 template <typename T> void checkInput(T* result){
     T a;

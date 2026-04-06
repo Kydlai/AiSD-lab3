@@ -1,16 +1,22 @@
 #include "IOManager.h"
 
 
+
 void clearInputBuffer(){
     cin.sync();  
 }
 
 bool acceptRequest() {
     cout << "[Y/N]?\n";
-    char c;
+    string* c = new string;
     clearInputBuffer();
-    cin >> c;
-    return c == 'Y' || c == 'y';
+    myin<string>(c);
+    return *c == "Y" || *c == "y";
+}
+
+bool repeatRequest(){
+    cout << "Желаете попробовать еще раз? ";
+    return acceptRequest();
 }
 
 template <typename T> T* myin(T* result){
@@ -20,38 +26,49 @@ template <typename T> T* myin(T* result){
     string s;
     cin >> s;
     if(s == "p") {// print
-        Segment::printSegments();
+        if(intSegmentOutput)
+            Segment::printSegments<int>();
+        else
+            Segment::printSegments<float>();
         result = myin(result);
     } else if(s == "s") { // settings
         cout << "Текущие настройки\n";
         cout << "1. default_data_segment_size: " << Segment::getDataSegmentSize() << endl;
         cout << "2. default_ptr_segment_size: " << Segment::getPtrSegmentSize() << endl;
+        cout << "3. Выводимый тип данных: " << (intSegmentOutput ? "int" : "float") << endl;
         cout << "Количество сегментов данных: " << Segment::getCount() << endl;
         cout << "Желаете ли вы что-либо изменить? ";
         if(acceptRequest()){
             cout << "Введите номер пункта для изменения\n";
-            int* a;
+            int* a = new int{};
             checkInput(a);
-            while(*a < 1 || *a > 2){
+            while(*a < 1 || *a > 3){
                 cout << "Введите корректный номер пункта\n";
                 checkInput(a);
             }
-            unsigned int* size;
-            cout << "Введите размер сегмента ";
+            unsigned int* size = new unsigned int{};
             switch (*a)
             {
             case 1:
+                cout << "Введите размер сегмента "; 
                 cout << "данных: ";
                 checkInput(size);
                 Segment::resetDataSegmentSize(*size);
                 break;
             
             case 2:
+                cout << "Введите размер сегмента ";
                 cout << "указателей: ";
                 checkInput(size);
                 Segment::resetPtrSegmentSize(*size);
                 break;
+            case 3:
+                cout << "Желаете изменить выводимый тип данных? ";
+                if(acceptRequest())
+                    intSegmentOutput = ! intSegmentOutput;
+                break;
             }
+            
         }
         result = myin(result);
     } else if(s == "h") {// help
@@ -66,7 +83,7 @@ template <typename T> T* myin(T* result){
     } else if(s == "q") {// quit
         throw TesterExitEception();
     } else{
-        checkPreInput(result, s);
+        checkPreInput<T>(result, s);
     }
     return result;
 }

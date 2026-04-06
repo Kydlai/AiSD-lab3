@@ -39,11 +39,12 @@ public:
     Segment();
     ~Segment();
     void NewPointer(void*& p, unsigned int bytes);
-    template <typename T> void SetPointer(T* p, T* b);
+    template <typename T> void SetPointer(void* p, void* b);
+    template <typename T> void SetPointer(void* p, unsigned int shift_p, void* b, unsigned int shift_b);
     void FreePointer(void* p);
     unsigned int getSize(void* p);
-    static void printSegments();
-    void printSegment(string label, Node* dll_head, int num);
+    template <typename T> static void printSegments();
+    template <typename T> void printSegment(string label, Node* dll_head, int num);
     static void resetDataSegmentSize(unsigned int newSize);
     static unsigned int getDataSegmentSize();
     static void resetPtrSegmentSize(unsigned int newSize);

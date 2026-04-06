@@ -59,7 +59,7 @@ void Segment::resizeDataSegment(unsigned int new_size){
                 break;
         }
     }
-    printSegments();
+    //printSegments();
     return;
 }
 
@@ -104,10 +104,10 @@ void Segment::NewPointer(void*& p, unsigned int bytes){ // <--------------------
             size_t* bytes_count_ptr = ptr_ptr + 1;
             *bytes_count_ptr = bytes;
         } catch (NoEmptySpaceException e) {
-            printSegments();
+            //printSegments();
             FreePointer(ptr_ptr);
             tmpSegmentId = (tmpSegmentId + 1) % idCounter;
-            printSegments();
+            //printSegments();
             if(!changeSegmentAllowed || tmpSegmentId == this->id){
                 this->resizeDataSegment(data_segment_size * 8);
                 return NewPointer(p, bytes);
@@ -118,12 +118,21 @@ void Segment::NewPointer(void*& p, unsigned int bytes){ // <--------------------
     return;
 }
 
-template <typename T> void Segment::SetPointer(T* p, T* b){ // <---------------------------------------------------
-    WritePointer<T>(p, ReadPointer<T>(b));
+
+// Копирует из b в p
+template <typename T> void Segment::SetPointer(void* p, unsigned int shift_p, void* b, unsigned int shift_b){ // <---------------------------------------------------
+    WritePointer<T>((T*)p, shift_p, ReadPointer<T>((T*)b, shift_b));
 }
 
-template void Segment::SetPointer<int>(int*, int*);
-template void Segment::SetPointer<float>(float*, float*);
+template <typename T> void Segment::SetPointer(void* p, void* b){ 
+   SetPointer<T>(p, 0, b, 0);
+}
+
+template void Segment::SetPointer<int>(void*, void*);
+template void Segment::SetPointer<float>(void*, void*);
+
+template void Segment::SetPointer<int>(void*, unsigned int shift_p, void*, unsigned int shift_b);
+template void Segment::SetPointer<float>(void*, unsigned int shift_p, void*, unsigned int shift_b);
 
 void Segment::FreePointer(void* p){ // <---------------------------------------------------------------------------
     size_t** ptr_ptr = (size_t**) ((byte*) p); // указатель на указатель
@@ -139,18 +148,21 @@ unsigned int Segment::getSize(void* p){
     return *(ptr + 1);
 }
 
-void Segment::printSegments(){
+template <typename T> void Segment::printSegments(){
     cout << "\n\n";
-    Segment::segments[0]->printSegment("Segment ptrs", ptr_dll_head, -1);
+    Segment::segments[0]->printSegment<int>("Segment ptrs", ptr_dll_head, -1);
     cout << "\n\n";
     for(int i = 0; i < Segment::segments.size(); ++i){
-        Segment::segments[i]->printSegment("Segment №" , Segment::segments[i]->data_dll_head, i);
+        Segment::segments[i]->printSegment<T>("Segment №" , Segment::segments[i]->data_dll_head, i);
         //cout << "\n═══════════════════════════════════════════════════════════════════\n";
         cout << "\n───────────────────────────────────────────────────────────────────\n";
     }
 }
 
-void Segment::printSegment(string label, Node* dll_head, int num){
+template void Segment::printSegments<int>();
+template void Segment::printSegments<float>();
+
+template <typename T> void Segment::printSegment(string label, Node* dll_head, int num){
     int tabs_count = 4;
 
     string one_tab_over = "╦══════════════";
@@ -188,14 +200,20 @@ void Segment::printSegment(string label, Node* dll_head, int num){
             int k = 0;
             for(float* i = (float*) tmp_node->start_ptr; i < (float*) tmp_node->end_ptr; ++i, ++k){
                 if(dll_head != ptr_dll_head){
-                    printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12.1f ║\n", "", i, "", "int", (float) *i);
+                    if constexpr (is_same_v<T, float>)
+                        printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12.1f ║\n", "", i, "", "int",  *((float*)i));
+                    else
+                        printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12d ║\n", "", i, "", "int",  *((int*)i));
                     cout << "╠═════" << n_tabs_middle << "╣\n";
                 }
                 else{
                     if(!(k%2))
                         printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12p ║\n", "", i, "", "ptr", (int*) *((int**)i++));
                     else{
-                        printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12.1f ║\n", "", i, "", "bytes", (float)*(i++));
+                        if constexpr (is_same_v<T, float>)
+                            printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12.1f ║\n", "", i, "", "bytes", *((float*)i++));
+                        else
+                            printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12d ║\n", "", i, "", "bytes", *((int*)i++));
                         cout << "╠═════" << n_tabs_middle << "╣\n";;
                     }
                 }
@@ -210,6 +228,9 @@ void Segment::printSegment(string label, Node* dll_head, int num){
         printf( "║size:║ %12d ║ %12s ║ %12s ║ %12s ║\n", this->data_segment_size, "", "", "");
     cout << "╚═════" << n_tabs_lover << "╝\n";
 }
+
+template void Segment::printSegment<int>(string label, Node* dll_head, int num);
+template void Segment::printSegment<float>(string label, Node* dll_head, int num);
 
 void Segment::resetDataSegmentSize(unsigned int newSize){
     if(newSize)

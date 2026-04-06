@@ -83,7 +83,7 @@ void testAllocator(){
                             cout << "Операция set не поддерживает работу с элементами массива в рамках тестера\n";
                         continue;
                         } 
-                        test_segment.SetPointer((int*) ptrs[*p], (int*) ptrs[*q]);
+                        test_segment.SetPointer<int>(ptrs[*p], ptrs[*q]);
                         cout << "В ячейку с указателем " << *p << " записано значение " << test_segment.ReadPointer<float>(ptrs[*q]) << " из ячейки с указателем " << *q << endl;
                     } else {
                         cout << "Данного указателя не существует\n";

@@ -5,6 +5,8 @@
 
 using namespace std;
 
+
+
 void inputManager(){
     cout << "\nВыберите какой пункт задания вы хотите испытать?\n";
     cout << "1. Сгенерировать массив А из элементов, найти сумму элементов, больших"
@@ -31,16 +33,64 @@ void inputManager(){
 }
 
 void firstMethod(){
+    
+    Segment* segment = new Segment();
+    cout << "Введите количество элементов n\n";
+    int* n = new int{};
+    n = myin(n);
+    void* array_ptr = nullptr;
+    segment->NewPointer(array_ptr, sizeof(int) * *n);
+    int* max_n = new int{};
+    cout << "Стандартное максимальное значение 40. Желаете изменить? ";
+    if(acceptRequest()){
+        cout << "Введите максимально допустимое значение n\n";
+        myin(max_n);
+    } else {
+        max_n = new int{40};
+    }
+    cout << "Сгенерированные числа: ";
+    for(int i = 0; i < *n; ++i){
+        int a = generateInt(*max_n);
+        cout << a << " ";
+        segment->WritePointer(array_ptr, i, a);
+    }
+    cout << endl << "\nВсе данные помещены в память\n";
 
+    unsigned int count = 0;
+
+    void* result_ptr = nullptr;
+    segment->NewPointer(result_ptr, sizeof(int) * *n); // TODO копия массива, перенос массива
+
+    for(int i = 0; i < *n; ++i){
+        if(segment->ReadPointer<int>(array_ptr, i) > 2 && segment->ReadPointer<int>(array_ptr, i) < 20 && segment->ReadPointer<int>(array_ptr, i) % 8 == 0)
+            segment->SetPointer<int>(result_ptr, count++, array_ptr, i);
+        
+    }
+    cout << "По условию подходит " << count << " элементов\n";
+    if(count){
+        cout << "Подходящие по условию элементы: ";
+        for(int i = 0; i < count; ++i){
+            cout << segment->ReadPointer<int>(result_ptr, i) << " ";
+        }
+        cout << endl;
+    }
+    
+    
+    //delete segment;
 }
 
 void secondMethod(){
 
 }
 
+int generateInt(size_t max_int){
+    return rand() % (max_int + 1);
+}
+
 
 int main() {
-    Segment* segment1 = new Segment();
+    srand(time(nullptr));
+    
     /*
 
     void* p1 = nullptr;
@@ -61,8 +111,15 @@ int main() {
     */
     cout << "Лабораторная работа №3\nВариант 12\nКудлай Никита\nВПР 21\n";
     cout << errata;
+    inputManager();
+    while(true){
+        if(repeatRequest())
+            inputManager();
+        else
+            break;
+    }
     
     
-    delete segment1;
+    //delete segment1;
     return 0;
 }
