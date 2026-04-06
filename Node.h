@@ -12,7 +12,6 @@ public:
     Node *prev;
     Node *next;
     statement state;
-    //vector<size_t> ptrs;
 
     static inline void nodeCollapse(Node* node, Node* dll_head);
     static inline void nodeConnect(Node* node1, Node* node2);

@@ -41,6 +41,7 @@ public:
     void NewPointer(void*& p, unsigned int bytes);
     template <typename T> void SetPointer(T* p, T* b);
     void FreePointer(void* p);
+    unsigned int getSize(void* p);
     static void printSegments();
     void printSegment(string label, Node* dll_head, int num);
     static void resetDataSegmentSize(unsigned int newSize);
@@ -49,23 +50,32 @@ public:
     static unsigned int getPtrSegmentSize();
     static unsigned int getCount();
 
-    template <typename T> void WritePointer(void* p, T data){ // <--------------------------------------------
+
+    template <typename T> void WritePointer(void* p, unsigned int shift, T data){ // <--------------------------------------------
     if(p != nullptr){
         size_t* ptr = (size_t*) p;
         if(ptr != nullptr)
-            *((T*) *ptr) = data;
+            *((T*) *ptr + shift) = data;
         else throw NullPtrException();
         } else throw NullPtrException(); 
         return;
     }
 
-    template <typename T> T ReadPointer(void* p){ // <--------------------------------------------------------
+    template <typename T> void WritePointer(void* p, T data){ 
+        WritePointer(p, 0, data);
+    }
+
+    template <typename T> T ReadPointer(void* p, unsigned int shift){ // <--------------------------------------------------------
         if(p != nullptr){
             size_t* ptr = (size_t*)p;
             if(ptr != nullptr)
-                return *((T*) *ptr);
+                return *((T*) *ptr + shift);
             else throw NullPtrException();
         } else throw NullPtrException();
+    }
+
+    template <typename T> T ReadPointer(void* p){
+        return ReadPointer<T>(p, 0);
     }
 };
 

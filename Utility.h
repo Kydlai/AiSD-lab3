@@ -29,3 +29,10 @@ public:
         return "Не найден Node для удаление соответствующих данных";
     }
 };
+
+class TesterExitEception : public exception{
+    public:
+    const char* what() const noexcept override {
+        return "Выход из режима тестирования";
+    }
+};

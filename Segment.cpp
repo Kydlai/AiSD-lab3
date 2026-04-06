@@ -122,6 +122,9 @@ template <typename T> void Segment::SetPointer(T* p, T* b){ // <----------------
     WritePointer<T>(p, ReadPointer<T>(b));
 }
 
+template void Segment::SetPointer<int>(int*, int*);
+template void Segment::SetPointer<float>(float*, float*);
+
 void Segment::FreePointer(void* p){ // <---------------------------------------------------------------------------
     size_t** ptr_ptr = (size_t**) ((byte*) p); // указатель на указатель
     byte* data_ptr = (byte*) *(ptr_ptr); // указатель на данные
@@ -129,6 +132,11 @@ void Segment::FreePointer(void* p){ // <----------------------------------------
     this->data_dll_head->removeData(data_ptr, (size_t) *(ptr_ptr + 1));
     ptr_dll_head->removeData(ptr_ptr, sizeof(size_t) * 2);
    // printSegments();
+}
+
+unsigned int Segment::getSize(void* p){
+    size_t* ptr = (size_t*) p;
+    return *(ptr + 1);
 }
 
 void Segment::printSegments(){
@@ -176,22 +184,24 @@ void Segment::printSegment(string label, Node* dll_head, int num){
             break;
         printf("║ %3d ║ %12p ║ %12p ║ %12s ║ %12s ║\n", j++, tmp_node->start_ptr, tmp_node->end_ptr, tmp_node->state == EMPTY ? "EMPTY" : "RESERVED", "");
         cout << "╠═════" << n_tabs_middle << "╣\n";
-        if(tmp_node->state == RESERVED)
-            for(int* i = (int*) tmp_node->start_ptr, k = 0; i < tmp_node->end_ptr; ++i, ++k){
+        if(tmp_node->state == RESERVED){
+            int k = 0;
+            for(float* i = (float*) tmp_node->start_ptr; i < (float*) tmp_node->end_ptr; ++i, ++k){
                 if(dll_head != ptr_dll_head){
-                    printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12d ║\n", "", i, "", "int", *i);
+                    printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12.1f ║\n", "", i, "", "int", (float) *i);
                     cout << "╠═════" << n_tabs_middle << "╣\n";
                 }
                 else{
                     if(!(k%2))
-                        printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12p ║\n", "", i, "", "ptr", *(i++));
+                        printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12p ║\n", "", i, "", "ptr", (int*) *((int**)i++));
                     else{
-                        printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12d ║\n", "", i, "", "bytes", *(i++));
+                        printf("║ %3s ║ %12p ║ %12s ║ %12s ║ %12.1f ║\n", "", i, "", "bytes", (float)*(i++));
                         cout << "╠═════" << n_tabs_middle << "╣\n";;
                     }
                 }
                 
             }
+        }
         if(tmp_node == dll_head) break;
     }
     if(dll_head != ptr_dll_head)

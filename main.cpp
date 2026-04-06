@@ -1,20 +1,43 @@
 #include "main.h"
+#include "Tester.h"
 #include "Segment.h"
 #include "IOManager.h"
 
 using namespace std;
 
-void clearInputBuffer(){
-    cin.sync();  
+void inputManager(){
+    cout << "\nВыберите какой пункт задания вы хотите испытать?\n";
+    cout << "1. Сгенерировать массив А из элементов, найти сумму элементов, больших"
+            "2 и меньших 20 и кратных 8, их количество и вывести результаты на экран.\n";
+    cout << "2: 2. В одномерном массиве, состоящем из n вещественных элементов,"
+            "вычислить количество элементов массива, лежащих в диапазоне от А до В.\n";
+
+    int n;
+    clearInputBuffer();
+    cin >> n;
+    switch (n)
+    {
+        case 1:
+            firstMethod();
+            break;
+        case 2:
+            secondMethod();
+            break;
+        default:
+            //errorMessage();
+            break;
+    }
+    return;
 }
 
-bool acceptRequest() {
-    cout << "[Y/N]?\n";
-    char c;
-    clearInputBuffer();
-    cin >> c;
-    return c == 'Y' || c == 'y';
+void firstMethod(){
+
 }
+
+void secondMethod(){
+
+}
+
 
 int main() {
     Segment* segment1 = new Segment();
@@ -36,6 +59,9 @@ int main() {
     //cout << segment1->ReadPointer<int>(p);
     Segment::printSegments();
     */
+    cout << "Лабораторная работа №3\nВариант 12\nКудлай Никита\nВПР 21\n";
+    cout << errata;
+    
     
     delete segment1;
     return 0;
