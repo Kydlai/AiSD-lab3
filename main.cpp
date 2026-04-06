@@ -11,7 +11,7 @@ void inputManager(){
     cout << "\nВыберите какой пункт задания вы хотите испытать?\n";
     cout << "1. Сгенерировать массив А из элементов, найти сумму элементов, больших"
             "2 и меньших 20 и кратных 8, их количество и вывести результаты на экран.\n";
-    cout << "2: 2. В одномерном массиве, состоящем из n вещественных элементов,"
+    cout << "2. В одномерном массиве, состоящем из n вещественных элементов,"
             "вычислить количество элементов массива, лежащих в диапазоне от А до В.\n";
 
     int n;
@@ -33,7 +33,7 @@ void inputManager(){
 }
 
 void firstMethod(){
-    
+    intSegmentOutput = true;
     Segment* segment = new Segment();
     cout << "Введите количество элементов n\n";
     int* n = new int{};
@@ -74,13 +74,75 @@ void firstMethod(){
         }
         cout << endl;
     }
-    
-    
-    //delete segment;
+    while(true)
+        try{
+            cout << "Введите q чтобы выйти";
+            int* a = new int{};
+            myin(a);
+        } catch(TesterExitEception e){
+            delete segment;
+        }
 }
 
 void secondMethod(){
+    intSegmentOutput = false;
+    Segment* segment = new Segment();
+    int* n = new int{};
+    void* array_ptr = nullptr;
+    segment->NewPointer(array_ptr, sizeof(float) * *n);
+    void* result_ptr = nullptr;
+    segment->NewPointer(result_ptr, sizeof(float) * *n);
 
+    cout << "Введите количество элементов n\n";
+    n = myin(n);
+    cout << "Вводите числа\n";
+    for(int i = 0; i < *n; ++i){
+        cout << i << ": ";
+        float* a = new float{};
+        myin(a);
+        segment->WritePointer(array_ptr, i, *a);
+    }
+
+    cout << "Введите границы диапазона А и В\n";
+    cout << "A: ";
+    float* A = new float{};
+    myin(A);
+    cout << "B: ";
+    float* B = new float{};
+    myin(B);
+
+    int count = 0;
+    //Segment::printSegments<float>();
+    //segment->printSegment("", segment->data_dll_head, )
+
+    for(int i = 0; i < *n; ++i){
+        if(segment->ReadPointer<float>(array_ptr, i) >= *A && segment->ReadPointer<float>(array_ptr, i) < *B){
+            segment->SetPointer<float>(result_ptr, count++, array_ptr, i);
+        }
+    }
+
+    
+
+    cout << "По условию подходит " << count << " элементов\n";
+    if(count){
+        cout << "Подходящие по условию элементы: ";
+        for(int i = 0; i < count; ++i){
+            cout << segment->ReadPointer<float>(result_ptr, i) << " ";
+        }
+        cout << endl;
+    }
+
+    
+
+    while(true)
+        try{
+            cout << "Введите q чтобы выйти";
+            int* a = new int{};
+            myin(a);
+        } catch(TesterExitEception e){
+            break;
+        }
+    //delete segment;
 }
 
 int generateInt(size_t max_int){

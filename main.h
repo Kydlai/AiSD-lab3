@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <ctime>
+#include "Segment.h"
 
 using namespace std;
 

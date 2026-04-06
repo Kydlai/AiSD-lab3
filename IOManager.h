@@ -6,12 +6,13 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <limits>
 
 using namespace std;
 
 inline bool intSegmentOutput{true};
 inline string errata =  "В любой момент вы можете ввести одну из этих комманд\n"
-                "h\thelp\np\tprint all segments\ns\topen settings\nt\ttest mode\n";
+                "h\thelp\np\tprint all segments\ns\topen settings\nt\ttest mode\nq\text\n";
 
 void clearInputBuffer();
 bool acceptRequest();
@@ -32,12 +33,14 @@ template <typename T> void checkInput(T* result){
 template <typename T> void checkPreInput(T* result, string s){
     T a;
     istringstream iss(s);
+    iss.clear();
     iss >> a;
     cin.clear();
     while(iss.fail() || cin.fail()){
         iss.clear();
         cin.clear();
         clearInputBuffer();
+        numeric_limits<streamsize>::max();
         cout << "Ошибка во входном типе данных, пожалуйста, повторите попытку ввода\n";
         cin >> a;
     }

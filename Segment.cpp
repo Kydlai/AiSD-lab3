@@ -223,9 +223,9 @@ template <typename T> void Segment::printSegment(string label, Node* dll_head, i
         if(tmp_node == dll_head) break;
     }
     if(dll_head != ptr_dll_head)
-        printf( "║size:║ %12d ║ %12s ║ %12s ║ %12s ║\n", default_ptr_segment_size, "", "", "");
-    else
         printf( "║size:║ %12d ║ %12s ║ %12s ║ %12s ║\n", this->data_segment_size, "", "", "");
+    else
+        printf( "║size:║ %12d ║ %12s ║ %12s ║ %12s ║\n", default_ptr_segment_size, "", "", "");
     cout << "╚═════" << n_tabs_lover << "╝\n";
 }
 
