@@ -8,16 +8,16 @@ using namespace std;
 
 
 void inputManager(){
-    cout << "\nВыберите какой пункт задания вы хотите испытать?\n";
-    cout << "1. Сгенерировать массив А из элементов, найти сумму элементов, больших"
+    cout << "\nЖелаете запустить один из стандартных тестов?\n";
+    cout << "1. Сгенерировать массив А из элементов, найти сумму элементов, больших "
             "2 и меньших 20 и кратных 8, их количество и вывести результаты на экран.\n";
-    cout << "2. В одномерном массиве, состоящем из n вещественных элементов,"
+    cout << "2. В одномерном массиве, состоящем из n вещественных элементов, "
             "вычислить количество элементов массива, лежащих в диапазоне от А до В.\n";
 
-    int n;
+    int* n = new int{};
     clearInputBuffer();
-    cin >> n;
-    switch (n)
+    n = myin(n);
+    switch (*n)
     {
         case 1:
             firstMethod();
@@ -112,14 +112,15 @@ void secondMethod(){
     myin(B);
 
     int count = 0;
-    //Segment::printSegments<float>();
-    //segment->printSegment("", segment->data_dll_head, )
+    //
+
 
     for(int i = 0; i < *n; ++i){
         if(segment->ReadPointer<float>(array_ptr, i) >= *A && segment->ReadPointer<float>(array_ptr, i) < *B){
             segment->SetPointer<float>(result_ptr, count++, array_ptr, i);
         }
     }
+
 
     
 
@@ -171,7 +172,7 @@ int main() {
     //cout << segment1->ReadPointer<int>(p);
     Segment::printSegments();
     */
-    cout << "Лабораторная работа №3\nВариант 12\nКудлай Никита\nВПР 21\n";
+    cout << "Ознакомительная практика\nКудлай Никита\nВПР 11\n";
     cout << errata;
     inputManager();
     while(true){
